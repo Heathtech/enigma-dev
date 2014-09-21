@@ -435,7 +435,7 @@ int screen_save(string filename) //Assumes native integers are little endian
   glReadPixels(0,0,w,h, GL_BGRA, GL_UNSIGNED_BYTE, rgbdata);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prevFbo);
 
-  int ret = image_save(filename, rgbdata, w, h, w, h, false);
+  int ret = image_save(filename, rgbdata, w, h, w, h, true);
 
   delete[] rgbdata;
   return ret;
@@ -455,7 +455,7 @@ int screen_save_part(string filename,unsigned x,unsigned y,unsigned w,unsigned h
   glReadPixels(x,window_get_region_height_scaled()-h-y,w,h, GL_BGRA, GL_UNSIGNED_BYTE, rgbdata);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prevFbo);
 
-  int ret = image_save(filename, rgbdata, w, h, w, h, false);
+  int ret = image_save(filename, rgbdata, w, h, w, h, true);
 
   delete[] rgbdata;
   return ret;

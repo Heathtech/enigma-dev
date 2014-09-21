@@ -53,6 +53,28 @@ unsigned char* image_flip(const unsigned char* data, unsigned width, unsigned he
 	return rgbdata;
 }
 
+void image_chroma_key(unsigned char* data, unsigned width, unsigned height) {
+  image_chroma_key(data, width, height, width);
+}
+
+void image_chroma_key(unsigned char* data, unsigned width, unsigned height, unsigned fullwidth) {
+  int t_pixel_b = data[(height-1)*fullwidth*4];
+  int t_pixel_g = data[(height-1)*fullwidth*4+1];
+  int t_pixel_r = data[(height-1)*fullwidth*4+2];
+  unsigned int ih, iw;
+  for (ih = 0; ih < height; ih++)
+  {
+    int tmp = ih*fullwidth*4;
+    for (iw = 0; iw < width; iw++)
+    {
+      if (data[tmp] == t_pixel_b && data[tmp+1] == t_pixel_g && data[tmp+2] == t_pixel_r)
+        data[tmp+3] = 0;
+
+      tmp+=4;
+	}
+  }
+}
+
 string image_get_format(string filename) {
 	size_t fp = filename.find_last_of(".");
     if (fp == string::npos){
@@ -254,7 +276,7 @@ int image_save_bmp(string filename, const unsigned char* data, unsigned width, u
 	for (unsigned i = 0; i < lastbyte; i += fullwidth) {
 		unsigned tmp = i;
 		if (!flipped) {
-			tmp = lastbyte - i;
+			tmp = lastbyte - fullwidth - i;
 		}
 		for (unsigned ii = 0; ii < width; ii += bytes) {
 			fwrite(&data[tmp + ii + 0],sizeof(char),1,bmp);
@@ -280,9 +302,8 @@ int image_save_png(string filename, const unsigned char* data, unsigned width, u
 	for (unsigned i = 0; i < height; i++) {
 		unsigned tmp = i;
 		unsigned bmp = i;
-		if (!flipped) {
+		if (flipped) {
 			tmp = height - 1 - tmp;
-			bmp = height - 1 - bmp;
 		}
 		tmp *= bytes * fullwidth;
 		bmp *= bytes * width;

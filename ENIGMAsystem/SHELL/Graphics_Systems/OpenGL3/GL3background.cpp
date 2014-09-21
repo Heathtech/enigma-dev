@@ -23,6 +23,7 @@
 #include "Universal_System/image_formats.h"
 #include "Universal_System/nlpo2.h"
 #include "Universal_System/backgroundstruct.h"
+#include "Platforms/platforms_mandatory.h"
 #include "Graphics_Systems/graphics_mandatory.h"
 #include "Universal_System/spritestruct.h"
 
@@ -71,10 +72,12 @@ int background_create_from_screen(int x, int y, int w, int h, bool removeback, b
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	int patchSize = full_width*full_height;
 	std::vector<unsigned char> rgbdata(4*patchSize);
-	glReadPixels(x, h-y,w,h,GL_RGBA, GL_UNSIGNED_BYTE, &rgbdata[0]);
+	glReadPixels(x, window_get_region_height_scaled()-h-y,w,h,GL_BGRA, GL_UNSIGNED_BYTE, &rgbdata[0]);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prevFbo);
 	
 	unsigned char* data = enigma::image_flip(&rgbdata[0], w, h, 4);
+	if(data && removeback)
+		enigma::image_chroma_key(&data[0], w, h);
 	
 	enigma::backgroundstructarray_reallocate();
     int bckid=enigma::background_idmax;

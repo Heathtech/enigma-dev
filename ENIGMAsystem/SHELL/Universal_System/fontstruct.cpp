@@ -93,7 +93,7 @@ namespace enigma
         // Here we calculate the bbox
         if (!prop)
            glyphmetrics[i].x = 0,   glyphmetrics[i].y = 0,
-           glyphmetrics[i].w = gwm-1, glyphmetrics[i].h = ghm-1;
+           glyphmetrics[i].w = gwm, glyphmetrics[i].h = ghm;
         else
         {
           glyphmetrics[i].x = gwm, glyphmetrics[i].y = ghm,
@@ -115,8 +115,8 @@ namespace enigma
         }
         fg->x = glyphmetrics[i].x; // Save these metrics while x and y are still relative to each glyph
         fg->y = glyphmetrics[i].y;
-        fg->x2 = glyphmetrics[i].w + 1; // And while w and h are still the right and bottom edge coordinates
-        fg->y2 = glyphmetrics[i].h + 1;
+        fg->x2 = glyphmetrics[i].w; // And while w and h are still the right and bottom edge coordinates
+        fg->y2 = glyphmetrics[i].h;
 
         fg->xs = glyphmetrics[i].w + sep; // This is just user-specified for sprite-loaded fonts
 
@@ -163,8 +163,8 @@ namespace enigma
 
         fg->tx = glyphmetrics[i].x / double(w);
         fg->ty = glyphmetrics[i].y / double(h);
-        fg->tx2 = (glyphmetrics[i].x + glyphmetrics[i].w) / double(w);
-        fg->ty2 = (glyphmetrics[i].y + glyphmetrics[i].h) / double(h);
+        fg->tx2 = (glyphmetrics[i].x + glyphmetrics[i].w - 1) / double(w);
+        fg->ty2 = (glyphmetrics[i].y + glyphmetrics[i].h - 1) / double(h);
       }
 	  
       font->texture = enigma::graphics_create_texture(w,h,w,h,bigtex,false);

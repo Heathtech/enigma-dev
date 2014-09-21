@@ -336,7 +336,7 @@ int surface_save(int id, string filename)
   glReadPixels(0,0,w,h,GL_BGRA,GL_UNSIGNED_BYTE,rgbdata);
   glBindFramebuffer(GL_FRAMEBUFFER_EXT, prevFbo);
 
-  int ret = enigma::image_save(filename, rgbdata, w, h, w, h, false);
+  int ret = enigma::image_save(filename, rgbdata, w, h, w, h, true);
 
   delete[] rgbdata;
   return ret;
@@ -355,10 +355,10 @@ int surface_save_part(int id, string filename, unsigned x, unsigned y, unsigned 
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prevFbo);
   glBindFramebuffer(GL_FRAMEBUFFER_EXT, surf->fbo);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  glReadPixels(x,y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,rgbdata);
+  glReadPixels(x,surf->height-h-y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,rgbdata);
   glBindFramebuffer(GL_FRAMEBUFFER_EXT, prevFbo);
 
-  int ret = enigma::image_save(filename, rgbdata, w, h, w, h, false);
+  int ret = enigma::image_save(filename, rgbdata, w, h, w, h, true);
 
   delete[] rgbdata;
   return ret;
@@ -374,11 +374,17 @@ int background_create_from_surface(int id, int x, int y, int w, int h, bool remo
   int prevFbo;
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prevFbo);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surf->fbo);
-  glReadPixels(x,y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
+  glReadPixels(x,surf->height-h-y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
+
+  unsigned char* data = enigma::image_flip(&surfbuf[0], w, h, 4);
+  if(data && removeback)
+    enigma::image_chroma_key(&data[0], w, h);
+	
   enigma::backgroundstructarray_reallocate();
   int bckid=enigma::background_idmax;
-  enigma::background_new(bckid, w, h, surfbuf, removeback, smooth, preload, false, 0, 0, 0, 0, 0, 0);
+  enigma::background_new(bckid, w, h, data, removeback, smooth, preload, false, 0, 0, 0, 0, 0, 0);
+  delete[] data;
   delete[] surfbuf;
   enigma::background_idmax++;
   return bckid;
@@ -397,9 +403,15 @@ int sprite_create_from_surface(int id, int x, int y, int w, int h, bool removeba
   int prevFbo;
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prevFbo);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surf->fbo);
-  glReadPixels(x,y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
+  glReadPixels(x,surf->height-h-y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
-  enigma::sprite_set_subimage(sprid, 0, w, h, surfbuf, surfbuf, enigma::ct_precise); //TODO: Support toggling of precise.
+
+  unsigned char* data = enigma::image_flip(&surfbuf[0], w, h, 4);
+  if(data && removeback)
+    enigma::image_chroma_key(&data[0], w, h);
+
+  enigma::sprite_set_subimage(sprid, 0, w, h, data, data, enigma::ct_precise); //TODO: Support toggling of precise.
+  delete[] data;
   delete[] surfbuf;
   return sprid;
 }
@@ -419,9 +431,15 @@ void sprite_add_from_surface(int ind, int id, int x, int y, int w, int h, bool r
   int prevFbo;
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prevFbo);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, surf->fbo);
-  glReadPixels(x,y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
+  glReadPixels(x,surf->height-h-y,w,h,GL_BGRA,GL_UNSIGNED_BYTE,surfbuf);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
-  enigma::sprite_add_subimage(ind, w, h, surfbuf, surfbuf, enigma::ct_precise); //TODO: Support toggling of precise.
+
+  unsigned char* data = enigma::image_flip(&surfbuf[0], w, h, 4);
+  if(data && removeback)
+    enigma::image_chroma_key(&data[0], w, h);
+
+  enigma::sprite_add_subimage(ind, w, h, data, data, enigma::ct_precise); //TODO: Support toggling of precise.
+  delete[] data;
   delete[] surfbuf;
 }
 

@@ -37,6 +37,9 @@ namespace enigma {
 	string image_get_format(string filename);
 	/// Reverses the scan-lines from top to bottom or vice verse, this is not actually to be used, you should load and save the data correctly to avoid duplicating it
 	unsigned char* image_flip(const unsigned char* data, unsigned width, unsigned height, unsigned bytesperpixel);
+	/// Removes pixels that match the bottom-left pixel
+	void image_chroma_key(unsigned char* data, unsigned width, unsigned height);
+	void image_chroma_key(unsigned char* data, unsigned width, unsigned height, unsigned fullwidth);
 	
 	/// Generic all-purpose image loading call.
 	unsigned char* image_load(string filename, string format, unsigned int* width, unsigned int* height, unsigned int* fullwidth, unsigned int* fullheight, bool flipped);

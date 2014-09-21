@@ -23,6 +23,7 @@ using namespace std;
 #include "Graphics_Systems/graphics_mandatory.h"
 #include "Collision_Systems/collision_mandatory.h"
 #include "Widget_Systems/widgets_mandatory.h"
+#include "Universal_System/image_formats.h"
 #include "spritestruct.h"
 #include "graphics_object.h"
 #include "Universal_System/instance_system.h"
@@ -114,7 +115,30 @@ void sprite_save(int ind, unsigned subimg, string fname) {
 }
 
 void sprite_save_strip(int ind, string fname) {
+    enigma::sprite *spr;
+    if (!get_sprite_mtx(spr, ind))
+        return;
 
+    unsigned sub_width, sub_height, result_width, result_height;
+    result_width = spr->width * spr->subcount;
+    result_height = spr->height;
+    unsigned char *result_data = new unsigned char[4 * result_width * result_height];
+    for(int index = 0; index < spr->subcount; index++)
+    {
+        unsigned char* sub_data = enigma::graphics_get_texture_pixeldata(spr->texturearray[index], &sub_width, &sub_height);
+        for(unsigned y = 0; y < result_height; y++)
+        {
+            memcpy(&result_data[(y * result_width + index * spr->width) * 4 * sizeof(unsigned char)], // address of destination
+                   &sub_data[y * sub_width * 4 * sizeof(unsigned char)],                              // address of source
+                   spr->width * 4 * sizeof(unsigned char));                                           // number of bytes to copy
+        }
+
+        delete[] sub_data;
+    }
+
+	enigma::image_save(fname, result_data, result_width, result_height, result_width, result_height, false);
+    
+    delete[] result_data;
 }
 
 void sprite_delete(int ind, bool free_texture)
@@ -264,23 +288,7 @@ namespace enigma
 
         // If sprite transparent, set the alpha to zero for pixels that should be transparent from lower left pixel color
         if (pxdata && transparent)
-        {
-          int t_pixel_b = pxdata[(height-1)*fullwidth*4];
-          int t_pixel_g = pxdata[(height-1)*fullwidth*4+1];
-          int t_pixel_r = pxdata[(height-1)*fullwidth*4+2];
-          unsigned int ih, iw;
-          for (ih = 0; ih < height; ih++)
-          {
-            int tmp = ih*fullwidth*4;
-            for (iw = 0; iw < width; iw++)
-            {
-              if (pxdata[tmp] == t_pixel_b && pxdata[tmp+1] == t_pixel_g && pxdata[tmp+2] == t_pixel_r)
-                pxdata[tmp+3] = 0;
-
-              tmp+=4;
-            }
-          }
-        }
+          enigma::image_chroma_key(&pxdata[0], width, height, fullwidth);
 
         unsigned cellwidth = width/imgnumb;
 		unsigned fullcellwidth = nlpo2dc(cellwidth) + 1;
